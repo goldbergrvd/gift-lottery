@@ -28,22 +28,22 @@ module.exports = class Participant {
   getNickname() { return this.nickname; }
 
   getSelected() { return this.selected; }
-  setSelected(parti) { this.selected = JSON.parse(JSON.stringify(parti)); }
+  setSelected(parti) { this.selected = { id: parti.getId(), nickname: parti.getNickname() }; }
   clearSelected() { this.selected = nonParti; }
   isSelected() { return this.selected.id !== -1; }
 
   getSelectedBy() { return this.selectedBy; }
-  setSelectedBy(parti) { this.selectedBy = JSON.parse(JSON.stringify(parti)); }
+  setSelectedBy(parti) { this.selectedBy = { id: parti.getId(), nickname: parti.getNickname() }; }
   clearSelectedBy() { this.selectedBy = nonParti; }
   isSelectedBy() { return this.selectedBy.id !== -1; }
 
   getDesired() { return this.desired; }
-  setDesired(parti) { this.desired = JSON.parse(JSON.stringify(parti)); }
+  setDesired(parti) { this.desired = { id: parti.getId(), nickname: parti.getNickname() }; }
   clearDesired() { this.desired = nonParti; }
   isDesired() { return this.desired.id !== -1; }
 
   getDesiredBy() { return this.desiredBy; }
-  setDesiredBy(parti) { this.desiredBy = JSON.parse(JSON.stringify(parti)); }
+  setDesiredBy(parti) { this.desiredBy = { id: parti.getId(), nickname: parti.getNickname() }; }
   clearDesiredBy() { this.desiredBy = nonParti; }
   isDesiredBy() { return this.desiredBy.id !== -1; }
 
