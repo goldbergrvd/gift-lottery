@@ -22,14 +22,6 @@ function broadcastPool() {
   partiPool.showRelation();
 }
 
-function emitSign(socket, parti) {
-  socket.emit('sign-success', {
-    id: parti.getId(),
-    nickname: parti.getNickname()
-  });
-  broadcastPool();
-}
-
 server.listen(port, () => {
   log(`Server listening at port ${port}`);
 });
@@ -81,7 +73,11 @@ io.on('connection', (socket) => {
   socket.on('signin', (id) => {
     partiPool.revertParti(id, (revertParti) => {
       parti = revertParti;
-      emitSign(socket, parti);
+      socket.emit('sign-success', {
+        id: parti.getId(),
+        nickname: parti.getNickname()
+      });
+      broadcastPool();
       log(`${parti.ident()} 登入`);
     });
   });

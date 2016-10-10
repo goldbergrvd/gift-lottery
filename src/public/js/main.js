@@ -61,6 +61,6 @@ $('#grid-page').on('click', 'span', function (evt) {
     return;
   }
 
-  socket.emit('desire', partiId)
+  socket.emit('desire', partiId);
 
 });
