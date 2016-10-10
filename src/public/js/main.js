@@ -4,14 +4,22 @@ var Participant = require('./role/Participant');
 var selfInfo;
 
 $('#signup-btn').on('click', function (evt) {
-  var nickname = $('#nickname').val();
+  var nickname = $('#sign-input').val();
   if (nickname) {
     socket.emit('signup', nickname);
   }
 });
 
-socket.on('signup-success', (info) => {
+$('#signin-btn').on('click', function (evt) {
+  var id = $('#sign-input').val();
+  if (id) {
+    socket.emit('signin', id);
+  }
+});
+
+socket.on('sign-success', (info) => {
   selfInfo = info;
+  $('#sign-input').val(info.nickname);
 });
 
 socket.on('refresh parti', (partiList) => {

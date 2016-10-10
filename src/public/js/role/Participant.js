@@ -1,15 +1,13 @@
-var uniqueid = 0;
-
-var nonParti = { id: -1, nickname: 'N/A'};
+const NON_PARTI = { id: -1, nickname: 'N/A'};
 
 module.exports = class Participant {
   constructor({
-    id = uniqueid++,
+    id,
     nickname,
-    selected = nonParti,
-    selectedBy = nonParti,
-    desired = nonParti,
-    desiredBy = nonParti
+    selected = NON_PARTI,
+    selectedBy = NON_PARTI,
+    desired = NON_PARTI,
+    desiredBy = NON_PARTI
   }) {
 
     this.id = id;
@@ -29,26 +27,41 @@ module.exports = class Participant {
 
   getSelected() { return this.selected; }
   setSelected(parti) { this.selected = { id: parti.getId(), nickname: parti.getNickname() }; }
-  clearSelected() { this.selected = nonParti; }
+  clearSelected() { this.selected = NON_PARTI; }
   isSelected() { return this.selected.id !== -1; }
 
   getSelectedBy() { return this.selectedBy; }
   setSelectedBy(parti) { this.selectedBy = { id: parti.getId(), nickname: parti.getNickname() }; }
-  clearSelectedBy() { this.selectedBy = nonParti; }
+  clearSelectedBy() { this.selectedBy = NON_PARTI; }
   isSelectedBy() { return this.selectedBy.id !== -1; }
 
   getDesired() { return this.desired; }
   setDesired(parti) { this.desired = { id: parti.getId(), nickname: parti.getNickname() }; }
-  clearDesired() { this.desired = nonParti; }
+  clearDesired() { this.desired = NON_PARTI; }
   isDesired() { return this.desired.id !== -1; }
 
   getDesiredBy() { return this.desiredBy; }
   setDesiredBy(parti) { this.desiredBy = { id: parti.getId(), nickname: parti.getNickname() }; }
-  clearDesiredBy() { this.desiredBy = nonParti; }
+  clearDesiredBy() { this.desiredBy = NON_PARTI; }
   isDesiredBy() { return this.desiredBy.id !== -1; }
 
   toString() {
-    return `#${this.id} ${this.nickname} desired by ${this.desiredBy.nickname}`;
+    var condition = this.isSelectedBy() ?
+                    'selected by ' + this.selectedBy.nickname :
+                    'desired by ' + this.desiredBy.nickname;
+    return `#${this.id} ${this.nickname} ${condition}`;
+  }
+
+  ident() {
+    return `#${this.id} ${this.nickname}`;
+  }
+
+  toJson() {
+    return JSON.stringify(this);
+  }
+
+  static fromJson(json) {
+    return new Participant(JSON.parse(json));
   }
 
 }

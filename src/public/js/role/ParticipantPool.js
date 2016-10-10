@@ -1,11 +1,55 @@
+var fs = require('fs');
+var path = require('path');
+var Participant = require('./Participant');
+
+const RES_PATH = path.resolve('../res');
+const PERSIST_PATH = path.resolve('../res/participant');
+
+
+var uniqueId;
 var pool = {};
 
-function addParti (parti) {
+fs.stat(RES_PATH, (err) => {
+  if (err !== null && err.code == 'ENOENT') { // file does not exist
+    fs.mkdirSync(RES_PATH);
+    fs.mkdirSync(PERSIST_PATH);
+    uniqueId = 0;
+  } else {
+    uniqueId = fs.readdirSync(PERSIST_PATH).length;
+  }
+});
+
+function addParti (nickname, done) {
+  var parti = new Participant({ id: uniqueId++, nickname: nickname });
   pool[parti.getId()] = parti;
+  persist(parti, done);
+}
+
+function revertParti (id, done) {
+  var filename = PERSIST_PATH + '/' + id + '.json';
+
+  fs.stat(filename, (err) => {
+    if (err === null) {
+      fs.readFile(filename, 'utf-8', (err, json) => {
+        if (err) throw err;
+        var parti = Participant.fromJson(json);
+        pool[parti.getId()] = parti;
+        done(parti);
+      });
+    }
+  });
 }
 
 function removeParti (parti) {
-  delete pool[parti.getId()];
+  if (pool[parti.getId()]) {
+    if (parti.isDesiredBy()) {
+      pool[parti.getDesiredBy().id].clearDesired();
+    }
+    if (parti.isDesired()) {
+      pool[parti.getDesired().id].clearDesiredBy();
+    }
+    delete pool[parti.getId()];
+  }
 }
 
 function get (id) {
@@ -20,7 +64,6 @@ function getAll () {
   return target;
 }
 
-// parti 選擇 desiredPartiid 的禮物
 function desire (parti, desiredPartiId) {
   var desiredParti = pool[desiredPartiId];
 
@@ -42,7 +85,7 @@ function desire (parti, desiredPartiId) {
   return true;
 }
 
-function undesire(parti, undesiredPartiId) {
+function undesire (parti, undesiredPartiId) {
   var undesiredParti = pool[undesiredPartiId];
 
   if (!undesiredParti) {
@@ -59,11 +102,11 @@ function undesire(parti, undesiredPartiId) {
   return true;
 }
 
-function clear() {
+function clear () {
   pool = {};
 }
 
-function showRelation() {
+function showRelation () {
   console.log('----------------------------------------------------------------');
   console.log('id\tname\ts\tsb\td\tdb');
   for(let key in pool) {
@@ -73,8 +116,17 @@ function showRelation() {
   console.log('----------------------------------------------------------------');
 }
 
+function persist (parti, done) {
+  var filePath = PERSIST_PATH + '/' + parti.getId() + '.json';
+  fs.writeFile(filePath, parti.toJson(), (err) => {
+    if (err) throw err;
+    done(parti);
+  });
+}
+
 module.exports = {
   addParti: addParti,
+  revertParti: revertParti,
   removeParti: removeParti,
   get: get,
   getAll: getAll,

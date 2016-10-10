@@ -17,6 +17,14 @@ function broadcastPool() {
   partiPool.showRelation();
 }
 
+function emitSign(socket, parti) {
+  socket.emit('sign-success', {
+    id: parti.getId(),
+    nickname: parti.getNickname()
+  });
+  broadcastPool();
+}
+
 server.listen(port, () => {
   log(`Server listening at port ${port}`);
 });
@@ -29,16 +37,20 @@ io.on('connection', (socket) => {
 
   socket.emit('refresh parti', partiPool.getAll());
 
-  socket.on('signup', (data) => {
-    parti = new Participant({ nickname: data });
-    partiPool.addParti(parti);
-    log(`新成員: ${parti}`);
-
-    socket.emit('signup-success', {
-      id: parti.getId(),
-      nickname: parti.getNickname()
+  socket.on('signup', (nickname) => {
+    partiPool.addParti(nickname, (newParti) => {
+      parti = newParti;
+      emitSign(socket, parti);
+      log(`${parti.ident()} 新加入`);
     });
-    broadcastPool();
+  });
+
+  socket.on('signin', (id) => {
+    partiPool.revertParti(id, (revertParti) => {
+      parti = revertParti;
+      emitSign(socket, parti);
+      log(`${parti.ident()} 登入`);
+    });
   });
 
   socket.on('desire', (desiredId) => {
@@ -49,8 +61,6 @@ io.on('connection', (socket) => {
     if (partiPool.desire(parti, desiredId)) {
       log(`${parti.getNickname()} 選 ${parti.getDesired().nickname}`);
       broadcastPool();
-    } else {
-      log(`#${parti.getId()} = #${desiredId} 不能選自己`);
     }
   });
 
@@ -62,8 +72,6 @@ io.on('connection', (socket) => {
     if (partiPool.undesire(parti, undesiredId)) {
       log(`${parti.getNickname()} 棄 ${partiPool.get(undesiredId).getNickname()}`);
       broadcastPool();
-    } else {
-      log(`#${parti.getId()} = #${undesiredId} 不能選自己`);
     }
   });
 
@@ -71,8 +79,8 @@ io.on('connection', (socket) => {
     if (parti) {
       partiPool.removeParti(parti);
       log(`再會了${parti.getNickname()}`);
+      broadcastPool();
     }
-    io.emit('refresh parti', partiPool.getAll());
   });
 
 });
