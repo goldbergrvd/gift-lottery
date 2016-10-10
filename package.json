@@ -25,6 +25,7 @@
     "browserify": "^13.1.0",
     "del": "^2.2.2",
     "express": "^4.14.0",
+    "formidable": "^1.0.17",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-uglify": "^2.0.0",

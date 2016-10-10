@@ -4,6 +4,7 @@ module.exports = class Participant {
   constructor({
     id,
     nickname,
+    imgExt,
     selected = NON_PARTI,
     selectedBy = NON_PARTI,
     desired = NON_PARTI,
@@ -12,6 +13,7 @@ module.exports = class Participant {
 
     this.id = id;
     this.nickname = nickname;
+    this.imgExt = imgExt;
 
     // 成功選中
     this.selected = selected;
@@ -24,6 +26,7 @@ module.exports = class Participant {
 
   getId() { return this.id; }
   getNickname() { return this.nickname; }
+  getImgName() { return this.id + '.' + this.imgExt; }
 
   getSelected() { return this.selected; }
   setSelected(parti) { this.selected = { id: parti.getId(), nickname: parti.getNickname() }; }

@@ -1,14 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <title>Merry Xmas!!!</title>
+  <style>
+    html, body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    #sign-page {
+      background-color: white;
+      z-index: 2;
+    }
+
+    #grid-page {
+      background-color: green;
+      z-index: 1;
+      overflow: scroll;
+    }
+
+    #sign-page input[type="text"] {
+      width: 80%;
+      height: 36px;
+      line-height: 28px;
+      display: block;
+      margin: 50px auto 10px ;
+      padding: 8px;
+      font-size: 28px;
+    }
+
+    #sign-page input[type="file"] {
+      height: 36px;
+      line-height: 28px;
+      display: block;
+      margin: 50px auto -40px;
+      padding: 8px;
+    }
+
+    #sign-page button {
+      display: block;
+      margin: auto;
+      font-size: 28px;
+    }
+  </style>
 </head>
 <body>
-  <input id="sign-input" type="text" placeholder="暱稱 or ID"></input>
-  <button id="signup-btn">註冊</button>
-  <button id="signin-btn">登入</button>
-  <div id="show"></div>
+  <div id="sign-page" class="container">
+    <form id="signup-form" action="signup" method="post" enctype="multipart/form-data" target="signup-response">
+      <input id="signup-file" name="file" type="file" />
+      <input id="signup-input" name="nickname" type="text" placeholder="暱稱" />
+      <!-- <input id="signup-btn" type="submit" value="註冊" /> -->
+      <button id="signup-btn">註冊</button>
+    </form>
+    <input id="signin-input" type="text" placeholder="ID" />
+    <button id="signin-btn">登入</button>
+  </div>
+
+  <div id="grid-page" class="container">
+  </div>
+
+  <iframe id="signup-response" src="" name="signup-response" style="display:none"></iframe>
 
   <script src="js/lib/jquery-2.2.4.min.js"></script>
   <script src="js/lib/underscore-1.8.3.min.js"></script>

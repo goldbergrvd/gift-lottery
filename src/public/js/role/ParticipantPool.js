@@ -4,6 +4,7 @@ var Participant = require('./Participant');
 
 const RES_PATH = path.resolve('../res');
 const PERSIST_PATH = path.resolve('../res/participant');
+const IMG_PATH = path.resolve('../res/img');
 
 
 var uniqueId;
@@ -13,15 +14,15 @@ fs.stat(RES_PATH, (err) => {
   if (err !== null && err.code == 'ENOENT') { // file does not exist
     fs.mkdirSync(RES_PATH);
     fs.mkdirSync(PERSIST_PATH);
+    fs.mkdirSync(IMG_PATH);
     uniqueId = 0;
   } else {
     uniqueId = fs.readdirSync(PERSIST_PATH).length;
   }
 });
 
-function addParti (nickname, done) {
-  var parti = new Participant({ id: uniqueId++, nickname: nickname });
-  pool[parti.getId()] = parti;
+function addParti (nickname, imgExt, done) {
+  var parti = new Participant({ id: uniqueId++, nickname: nickname, imgExt: imgExt });
   persist(parti, done);
 }
 

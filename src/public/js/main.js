@@ -4,14 +4,25 @@ var Participant = require('./role/Participant');
 var selfInfo;
 
 $('#signup-btn').on('click', function (evt) {
-  var nickname = $('#sign-input').val();
-  if (nickname) {
-    socket.emit('signup', nickname);
+  evt.preventDefault();
+
+  if (document.querySelector('#signup-file').files.length &&
+      document.querySelector('#signup-input').value) {
+
+    $('#signup-form')[0].submit();
+    var iid = setInterval(function () {
+      var id = $('#signup-response').contents().find('body').text();
+      if (id) {
+        clearInterval(iid);
+        $('#signin-input').val(id);
+        $('#signin-btn').trigger('click');
+      }
+    }, 10);
   }
 });
 
 $('#signin-btn').on('click', function (evt) {
-  var id = $('#sign-input').val();
+  var id = $('#signin-input').val();
   if (id) {
     socket.emit('signin', id);
   }
@@ -19,11 +30,12 @@ $('#signin-btn').on('click', function (evt) {
 
 socket.on('sign-success', (info) => {
   selfInfo = info;
-  $('#sign-input').val(info.nickname);
+  $('#sign-page').css('z-index', 1);
+  $('#grid-page').css('z-index', 2);
 });
 
 socket.on('refresh parti', (partiList) => {
-  $('#show').html(
+  $('#grid-page').html(
     _.chain(partiList)
      .map((parti) => new Participant(parti))
      .map((parti) => {
@@ -36,7 +48,7 @@ socket.on('refresh parti', (partiList) => {
   );
 });
 
-$('#show').on('click', 'span', function (evt) {
+$('#grid-page').on('click', 'span', function (evt) {
   var partiId = parseInt($(this).data('id'));
   var desiredById = parseInt($(this).data('desired-by-id'));
 
