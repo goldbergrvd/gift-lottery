@@ -22,6 +22,10 @@ function broadcastPool() {
   partiPool.showRelation();
 }
 
+process.on('uncaughtException', function (err) {
+  console.error('got uncaught exception:', err.message);
+});
+
 server.listen(port, () => {
   log(`Server listening at port ${port}`);
 });
@@ -71,6 +75,25 @@ io.on('connection', (socket) => {
   socket.emit('refresh parti', partiPool.getAll());
 
   socket.on('signin', (id) => {
+    if (id === 'adnim') {
+      socket.emit('god-you');
+      log('上帝降臨!');
+
+      socket.on('lottery', () => {
+        var lotteryId = partiPool.lottery();
+        if (lotteryId > -1) {
+          var parti = partiPool.get(lotteryId);
+          log(`中獎者: ${parti.ident()}`);
+          socket.emit('lottery-result', {
+            id: lotteryId,
+            ident: parti.ident()
+          });
+        }
+      });
+
+      return;
+    }
+
     partiPool.revertParti(id, (revertParti) => {
       parti = revertParti;
       socket.emit('sign-success', {

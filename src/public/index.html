@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta charset="UTF-8">
   <title>Merry Xmas!!!</title>
   <style>
@@ -25,11 +25,17 @@
     }
 
     #grid-page {
-      background-color: green;
+      background-color: white;
       z-index: 1;
       overflow: scroll;
     }
 
+    #god-page {
+      background-color: white;
+      z-index: 1;
+    }
+
+    /* 登入頁面元素 */
     #sign-page input[type="text"] {
       width: 80%;
       height: 36px;
@@ -53,6 +59,88 @@
       margin: auto;
       font-size: 28px;
     }
+
+    /* 網格頁面元素 */
+    #grid-page ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    #grid-page li {
+      width: 32%;
+      font-size: 12px;
+      display: inline-block;
+      padding: 1em;
+      position: relative;
+
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    #grid-page .photo img {
+      width: 100%;
+      border-radius: 8px;
+      -moz-border-radius: 8px;
+      -webkit-border-radius: 8px;
+    }
+
+    #grid-page .ident {
+      text-align: center;
+    }
+
+    #grid-page .mask {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 8px;
+      -moz-border-radius: 8px;
+      -webkit-border-radius: 8px;
+    }
+
+    #grid-page .mask-self {
+      background-color: red;
+    }
+
+    #grid-page .mask-other {
+      background-color: white;
+    }
+
+    @media screen and (min-width: 320px) {
+      #grid-page li {
+        width: 24%;
+        font-size: 16px;
+      }
+    }
+
+    @media screen and (min-width: 960px) {
+      #grid-page li {
+        width: 16%;
+        font-size: 18px;
+      }
+    }
+
+    #lottery-btn {
+      display: block;
+      margin: auto;
+      font-size: 36px;
+    }
+
+    #lottery-result {
+      width: 200px;
+      margin: 20px auto 0;
+    }
+
   </style>
 </head>
 <body>
@@ -60,7 +148,6 @@
     <form id="signup-form" action="signup" method="post" enctype="multipart/form-data" target="signup-response">
       <input id="signup-file" name="file" type="file" />
       <input id="signup-input" name="nickname" type="text" placeholder="暱稱" />
-      <!-- <input id="signup-btn" type="submit" value="註冊" /> -->
       <button id="signup-btn">註冊</button>
     </form>
     <input id="signin-input" type="text" placeholder="ID" />
@@ -68,6 +155,94 @@
   </div>
 
   <div id="grid-page" class="container">
+    <ul>
+      <!-- <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#1 波波</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#2 黑小</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#3 住住</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#4 麵寶</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#5 小夫</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#6 宅凡</div>
+        <div class="mask mask-other"></div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#7 江尬</div>
+        <div class="mask mask-self"></div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#8 小皮</div>
+        <div class="mask mask-other"></div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#9 皮友</div>
+        <div class="mask mask-other"></div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#10 小春</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#11 榮榮</div>
+      </li>
+      <li>
+        <div class="photo">
+          <img src="xxx.jpg" alt="">
+        </div>
+        <div class="ident">#12 阿花</div>
+        <div class="mask mask-other"></div>
+      </li> -->
+    </ul>
+  </div>
+
+  <div id="god-page" class="container">
+    <button id="lottery-btn">決定命運</button>
+    <div id="lottery-result">
+      <div id="lottery-parti"></div>
+      <button id="lottery-ok-btn">ＯＫ</button>
+      <button id="lottery-cancel-btn">駁回</button>
+    </div>
   </div>
 
   <iframe id="signup-response" src="" name="signup-response" style="display:none"></iframe>

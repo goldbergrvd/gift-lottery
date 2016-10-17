@@ -22,18 +22,18 @@ fs.stat(RES_PATH, (err) => {
 });
 
 function addParti (nickname, imgExt, done) {
-  var parti = new Participant({ id: uniqueId++, nickname: nickname, imgExt: imgExt });
+  let parti = new Participant({ id: uniqueId++, nickname: nickname, imgExt: imgExt });
   persist(parti, done);
 }
 
 function revertParti (id, done) {
-  var filename = PERSIST_PATH + '/' + id + '.json';
+  let filename = PERSIST_PATH + '/' + id + '.json';
 
   fs.stat(filename, (err) => {
     if (err === null) {
       fs.readFile(filename, 'utf-8', (err, json) => {
         if (err) throw err;
-        var parti = Participant.fromJson(json);
+        let parti = Participant.fromJson(json);
         pool[parti.getId()] = parti;
         done(parti);
       });
@@ -58,15 +58,22 @@ function get (id) {
 }
 
 function getAll () {
-  var target = [];
+  let target = [];
   for (let key in pool) {
     target.push(pool[key]);
   }
   return target;
 }
 
+function lottery () {
+  let unSelected = getAll().filter((parti) => !parti.isSelected());
+  return unSelected.length === 0
+         ? -1
+         : unSelected[Math.floor(Math.random() * unSelected.length)].getId();
+}
+
 function desire (parti, desiredPartiId) {
-  var desiredParti = pool[desiredPartiId];
+  let desiredParti = pool[desiredPartiId];
 
   if (!desiredParti) {
     return false;
@@ -87,7 +94,7 @@ function desire (parti, desiredPartiId) {
 }
 
 function undesire (parti, undesiredPartiId) {
-  var undesiredParti = pool[undesiredPartiId];
+  let undesiredParti = pool[undesiredPartiId];
 
   if (!undesiredParti) {
     return false;
@@ -101,6 +108,14 @@ function undesire (parti, undesiredPartiId) {
   undesiredParti.clearDesiredBy();
 
   return true;
+}
+
+function select (parti, selectedPartiId) {
+
+}
+
+function unselect (parti, unselectedPartiId) {
+
 }
 
 function clear () {
@@ -126,13 +141,16 @@ function persist (parti, done) {
 }
 
 module.exports = {
-  addParti: addParti,
-  revertParti: revertParti,
-  removeParti: removeParti,
-  get: get,
-  getAll: getAll,
-  desire: desire,
-  undesire: undesire,
-  clear: clear,
-  showRelation: showRelation
+  addParti,
+  revertParti,
+  removeParti,
+  get,
+  getAll,
+  lottery,
+  desire,
+  undesire,
+  select,
+  unselect,
+  clear,
+  showRelation
 };
