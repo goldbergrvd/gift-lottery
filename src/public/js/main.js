@@ -3,19 +3,41 @@ var Participant = require('./role/Participant');
 
 var selfInfo;
 
-function gridView(parti) {
-  let partiIdAttr = 'data-id="' + parti.getId() + '"';
-  let desiredByIdAttr = parti.isDesiredBy() ? 'data-desired-by-id="' + parti.getDesiredBy().id + '"' : '';
+function gridView (parti) {
+  let partiIdAttr = `data-id="${parti.getId()}"`;
+  let desireIdAttr = parti.isDesired() ? `data-desired-id="${parti.getDesired().id}"` : '';
+  let desiredByIdAttr = parti.isDesiredBy() ? `data-desired-by-id="${parti.getDesiredBy().id}"` : '';
+  let selectedIdAttr = parti.isSelected() ? `data-selected-id="${parti.getSelected().id}"` : '';
+  let selectedByIdAttr = parti.isSelectedBy() ? `data-selected-by-id="${parti.getSelectedBy().id}"` : '';
   let maskEle = '';
-  if (parti.isDesiredBy()) {
-    if (parti.getDesiredBy().id === selfInfo.id) {
-      maskEle = '<div class="mask mask-self"></div>';
+
+  if (selfInfo.winner) {
+    if (!parti.isSelectedBy()) {
+      maskEle = '<div class="mask mask-un-availible"></div>';
     } else {
-      maskEle = '<div class="mask mask-other"></div>';
+      if (parti.isDesiredBy()) {
+        if (parti.getDesiredBy().id === selfInfo.id) {
+          maskEle = '<div class="mask mask-winner-desire"></div>';
+        } else {
+          maskEle = '<div class="mask mask-un-availible"></div>';
+        }
+      } else {
+        maskEle = '<div class="mask mask-selected"></div>';
+      }
+    }
+  } else {
+    if (parti.isSelectedBy()) {
+      maskEle = '<div class="mask mask-un-availible"></div>';
+    } else if (parti.isDesiredBy()) {
+      if (parti.getDesiredBy().id === selfInfo.id) {
+        maskEle = '<div class="mask mask-loser-desire"></div>';
+      } else {
+        maskEle = '<div class="mask mask-un-availible"></div>';
+      }
     }
   }
 
-  return `<li ${partiIdAttr} ${desiredByIdAttr}>
+  return `<li ${partiIdAttr} ${desireIdAttr} ${desiredByIdAttr} ${selectedIdAttr} ${selectedByIdAttr}>
             <div class="photo">
               <img src="img/${parti.getImgName()}" alt="">
             </div>
@@ -24,7 +46,7 @@ function gridView(parti) {
           </li>`;
 }
 
-function tuneImgHeight() {
+function tuneImgHeight () {
   let $img = $('#grid-page img');
   let width = $img.width();
   $img.height(width);
@@ -65,10 +87,31 @@ socket.on('sign-success', function (info) {
   $('#sign-page').css('z-index', 1);
   $('#grid-page').css('z-index', 2);
   $(this).attr('disabled', false);
+
+  // 網格狀態改變
+  socket.on('refresh parti', function (partiList) {
+    $('#grid-page ul').html(
+      _.chain(partiList)
+       .map(parti => new Participant(parti))
+       .map(parti => gridView(parti))
+       .value()
+       .join('')
+    );
+
+    tuneImgHeight();
+  });
+
+  socket.on('winner', function (winnerId) {
+    if (selfInfo.id === winnerId) {
+      selfInfo.winner = true;
+    }
+  });
 });
 
 // 管理者登入成功
 socket.on('god-you', function (info) {
+  var lottery;
+
   $('#sign-page').css('z-index', 1);
   $('#god-page').css('z-index', 2);
   $('#lottery-btn').on('click', function (evt) {
@@ -76,36 +119,47 @@ socket.on('god-you', function (info) {
   });
 
   socket.on('lottery-result', function (data) {
-    $('#lottery-parti').text(data.ident);
+    lottery = data;
+    $('#lottery-parti').text(data.winnerIdent);
   });
-});
 
-// 網格狀態改變
-socket.on('refresh parti', function (partiList) {
-  $('#grid-page ul').html(
-    _.chain(partiList)
-     .map(parti => new Participant(parti))
-     .map(parti => gridView(parti))
-     .value()
-     .join('')
-  );
-
-  tuneImgHeight();
+  $('#lottery-resolve-btn').on('click', function (evt) {
+    socket.emit('lottery-resolve', lottery.lotteryId);
+  });
 });
 
 $('#grid-page').on('click', 'li', function (evt) {
   let partiId = parseInt($(this).data('id'));
+  let desiredId = parseInt($(this).data('desired-id'));
   let desiredById = parseInt($(this).data('desired-by-id'));
+  let selectedId = parseInt($(this).data('selected-id'));
+  let selectedById = parseInt($(this).data('selected-by-id'));
 
-  if (selfInfo.id === partiId) {
-    return;
-  }
-
+  // 再點一次自己點過的就取消
   if (selfInfo.id === desiredById) {
     socket.emit('undesire', partiId);
     return;
   }
 
-  socket.emit('desire', partiId);
+  if (selfInfo.winner) {
 
+    // 溫拿不能侵犯魯蛇的地盤
+    if (Number.isNaN(selectedById)) {
+      return;
+    }
+
+  } else {
+
+    // 魯蛇不能選自己的
+    if (selfInfo.id === partiId) {
+      return;
+    }
+
+    // 已經被選走了
+    if (selectedById >= 0) {
+      return;
+    }
+  }
+
+  socket.emit('desire', partiId);
 });

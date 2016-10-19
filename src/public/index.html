@@ -103,30 +103,36 @@
       position: absolute;
       top: 0;
       left: 0;
-      border-radius: 8px;
-      -moz-border-radius: 8px;
-      -webkit-border-radius: 8px;
     }
 
-    #grid-page .mask-self {
-      background-color: red;
+    #grid-page .mask-loser-desire {
+      background-color: rgba(255, 0, 0, 0.3);
     }
 
-    #grid-page .mask-other {
+    #grid-page .mask-winner-desire {
+      background-color: rgba(255, 0, 0, 1);
+      border: 2px solid black;
+    }
+
+    #grid-page .mask-selected {
+      background-color: green;
+      border: 2px solid black;
+    }
+
+    #grid-page .mask-un-availible {
       background-color: white;
     }
 
     @media screen and (min-width: 320px) {
       #grid-page li {
         width: 24%;
-        font-size: 16px;
       }
     }
 
     @media screen and (min-width: 960px) {
       #grid-page li {
         width: 16%;
-        font-size: 18px;
+        font-size: 16px;
       }
     }
 
@@ -238,10 +244,10 @@
 
   <div id="god-page" class="container">
     <button id="lottery-btn">決定命運</button>
-    <div id="lottery-result">
+    <div id="lottery-result" style="display: hide;">
       <div id="lottery-parti"></div>
-      <button id="lottery-ok-btn">ＯＫ</button>
-      <button id="lottery-cancel-btn">駁回</button>
+      <button id="lottery-resolve-btn">ＯＫ</button>
+      <button id="lottery-reject-btn">駁回</button>
     </div>
   </div>
 

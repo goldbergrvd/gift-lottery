@@ -66,10 +66,10 @@ function getAll () {
 }
 
 function lottery () {
-  let unSelected = getAll().filter((parti) => !parti.isSelected());
-  return unSelected.length === 0
+  let unSelectedBy = getAll().filter((parti) => !parti.isSelectedBy());
+  return unSelectedBy.length === 0
          ? -1
-         : unSelected[Math.floor(Math.random() * unSelected.length)].getId();
+         : unSelectedBy[Math.floor(Math.random() * unSelectedBy.length)].getId();
 }
 
 function desire (parti, desiredPartiId) {
@@ -79,7 +79,12 @@ function desire (parti, desiredPartiId) {
     return false;
   }
 
-  if (parti.getId() === desiredParti.getId()) {
+  // TODO: 有點難防...
+  // if (lastPartiMustDesireSelf(desiredPartiId)) {
+  //   return false;
+  // }
+
+  if (!desiredParti.isSelected() && parti.getId() === desiredParti.getId()) {
     return false;
   }
 
@@ -110,8 +115,32 @@ function undesire (parti, undesiredPartiId) {
   return true;
 }
 
-function select (parti, selectedPartiId) {
+function resetAllDesire() {
+  for (let key in pool) {
+    pool[key].clearDesired();
+    pool[key].clearDesiredBy();
+  }
+}
 
+function select (parti, selectedByPartiId) {
+  let selectByParti = pool[selectedByPartiId];
+
+  if (!selectByParti) {
+    return false;
+  }
+
+  if (parti.getId() === selectByParti.getId()) {
+    return false;
+  }
+
+  if (selectByParti.isSelected()) {
+    return false;
+  }
+
+  parti.setSelectedBy(selectByParti);
+  selectByParti.setSelected(parti);
+
+  return true;
 }
 
 function unselect (parti, unselectedPartiId) {
@@ -140,6 +169,35 @@ function persist (parti, done) {
   });
 }
 
+// function lastPartiMustDesireSelf (desiredId) {
+//   let undesiredLosers = getAll().filter((parti) => !parti.isSelected() && !parti.isDesired());
+//   if (undesiredLosers.length === 2) {
+//     let [first, second] = undesiredLosers;
+//     console.log(`desiredId: ${desiredId}`);
+//     console.log(`first: ${first.ident()}`);
+//     console.log(`second: ${second.ident()}`);
+
+//     // 可互選
+//     if (!first.isDesired() && !first.isDesiredBy() &&
+//         !second.isDesired() && !second.isDesiredBy()) {
+//       return false;
+//     }
+
+//     if (!first.isDesired() && !first.isDesiredBy()) {
+//       if (desiredId !== first.getId()) {
+//         return true;
+//       }
+//     }
+//     if (!second.isDesired() && !second.isDesiredBy()) {
+//       if (desiredId !== second.getId()) {
+//         return true;
+//       }
+//     }
+//   }
+
+//   return false;
+// }
+
 module.exports = {
   addParti,
   revertParti,
@@ -149,6 +207,7 @@ module.exports = {
   lottery,
   desire,
   undesire,
+  resetAllDesire,
   select,
   unselect,
   clear,

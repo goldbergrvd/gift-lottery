@@ -17,9 +17,39 @@ function log (msg) {
   console.log(`[${moment().format('HH:mm:ss')}]: ${msg}`);
 }
 
-function broadcastPool() {
+function broadcastPool () {
   io.emit('refresh parti', partiPool.getAll());
   partiPool.showRelation();
+}
+
+function bindGodEvent (socket) {
+  socket.on('lottery', () => {
+    var lotteryId = partiPool.lottery();
+    if (lotteryId > -1) {
+      var parti = partiPool.get(lotteryId);
+      var winner = parti.getDesiredBy();
+      log(`中獎者: ${winner.nickname}`);
+      socket.emit('lottery-result', {
+        lotteryId,
+        winnerIdent: `#${winner.id} ${winner.nickname}`
+      });
+    }
+  });
+
+  socket.on('lottery-resolve', (lotteryId) => {
+    var selectedParti = partiPool.get(lotteryId);
+    var winnerId = selectedParti.getDesiredBy().id;
+    if (partiPool.select(selectedParti, winnerId)) {
+      log(`${selectedParti.getSelectedBy().nickname} 中獎 ${selectedParti.getNickname()}`);
+      partiPool.resetAllDesire();
+      io.emit('winner', winnerId);
+      broadcastPool();
+    }
+  });
+
+  socket.on('lottery-reject', () => {
+
+  });
 }
 
 process.on('uncaughtException', function (err) {
@@ -79,18 +109,7 @@ io.on('connection', (socket) => {
       socket.emit('god-you');
       log('上帝降臨!');
 
-      socket.on('lottery', () => {
-        var lotteryId = partiPool.lottery();
-        if (lotteryId > -1) {
-          var parti = partiPool.get(lotteryId);
-          log(`中獎者: ${parti.ident()}`);
-          socket.emit('lottery-result', {
-            id: lotteryId,
-            ident: parti.ident()
-          });
-        }
-      });
-
+      bindGodEvent(socket);
       return;
     }
 
