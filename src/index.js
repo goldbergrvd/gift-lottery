@@ -19,6 +19,11 @@ function log (msg) {
 
 function broadcastPool () {
   io.emit('refresh parti', partiPool.getAll());
+  if (partiPool.isAllDesiredBy()) {
+    io.emit('lottery-available');
+  } else {
+    io.emit('lottery-unavailable');
+  }
   partiPool.showRelation();
 }
 

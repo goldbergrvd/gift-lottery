@@ -114,6 +114,14 @@ socket.on('god-you', function (info) {
 
   $('#sign-page').css('z-index', 1);
   $('#god-page').css('z-index', 2);
+
+  socket.on('lottery-available', function () {
+    $('#lottery-btn').attr('disabled', false);
+  });
+  socket.on('lottery-unavailable', function () {
+    $('#lottery-btn').attr('disabled', true);
+  });
+
   $('#lottery-btn').on('click', function (evt) {
     socket.emit('lottery');
   });

@@ -79,10 +79,9 @@ function desire (parti, desiredPartiId) {
     return false;
   }
 
-  // TODO: 有點難防...
-  // if (lastPartiMustDesireSelf(desiredPartiId)) {
-  //   return false;
-  // }
+  if (lastPartiMustDesireSelf(parti.getId(), desiredPartiId)) {
+    return false;
+  }
 
   if (!desiredParti.isSelected() && parti.getId() === desiredParti.getId()) {
     return false;
@@ -147,6 +146,15 @@ function unselect (parti, unselectedPartiId) {
 
 }
 
+function isAllDesiredBy () {
+  for (let key in pool) {
+    if (!pool[key].isDesiredBy()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function clear () {
   pool = {};
 }
@@ -169,34 +177,31 @@ function persist (parti, done) {
   });
 }
 
-// function lastPartiMustDesireSelf (desiredId) {
-//   let undesiredLosers = getAll().filter((parti) => !parti.isSelected() && !parti.isDesired());
-//   if (undesiredLosers.length === 2) {
-//     let [first, second] = undesiredLosers;
-//     console.log(`desiredId: ${desiredId}`);
-//     console.log(`first: ${first.ident()}`);
-//     console.log(`second: ${second.ident()}`);
+function lastPartiMustDesireSelf (partiId, desiredId) {
+  let undesiredLoserIds = getAll().filter(parti => !parti.isSelected() && !parti.isDesired())
+                                  .map(parti => parti.getId());
+  let availibleIds = getAll().filter(parti => !parti.isSelectedBy() && !parti.isDesiredBy())
+                             .map(parti => parti.getId());
 
-//     // 可互選
-//     if (!first.isDesired() && !first.isDesiredBy() &&
-//         !second.isDesired() && !second.isDesiredBy()) {
-//       return false;
-//     }
+  if (undesiredLoserIds.length === 2) {
 
-//     if (!first.isDesired() && !first.isDesiredBy()) {
-//       if (desiredId !== first.getId()) {
-//         return true;
-//       }
-//     }
-//     if (!second.isDesired() && !second.isDesiredBy()) {
-//       if (desiredId !== second.getId()) {
-//         return true;
-//       }
-//     }
-//   }
+    let [ firstLoserId, secondLoserId ] = undesiredLoserIds;
+    let [ firstId, secondId ] = availibleIds;
 
-//   return false;
-// }
+    let restLoserId = partiId === firstLoserId ? secondLoserId : firstLoserId;
+    let restAvailableId = desiredId === firstId ? secondId : firstId;
+
+    // console.log('undesiredLoserIds: ' + undesiredLoserIds);
+    // console.log('availibleIds: ' + availibleIds);
+    // console.log(restLoserId, restAvailableId);
+
+    if (restLoserId === restAvailableId) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 module.exports = {
   addParti,
@@ -210,6 +215,7 @@ module.exports = {
   resetAllDesire,
   select,
   unselect,
+  isAllDesiredBy,
   clear,
   showRelation
 };
