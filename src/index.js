@@ -34,8 +34,9 @@ function bindGodEvent (socket) {
       var parti = partiPool.get(lotteryId);
       var winner = parti.getDesiredBy();
       log(`中獎者: ${winner.nickname}`);
-      socket.emit('lottery-result', {
+      io.emit('lottery-result', {
         lotteryId,
+        lotteryIdent: `#${parti.id} ${parti.nickname}`,
         winnerIdent: `#${winner.id} ${winner.nickname}`
       });
     }
@@ -46,15 +47,15 @@ function bindGodEvent (socket) {
     var winnerId = selectedParti.getDesiredBy().id;
     if (partiPool.select(selectedParti, winnerId)) {
       log(`${selectedParti.getSelectedBy().nickname} 中獎 ${selectedParti.getNickname()}`);
-      partiPool.resetAllDesire();
       io.emit('winner', winnerId);
-      broadcastPool();
     }
   });
 
-  socket.on('lottery-reject', () => {
-
+  socket.on('next-round', () => {
+    partiPool.resetAllDesire();
+    broadcastPool();
   });
+
 }
 
 process.on('uncaughtException', function (err) {
@@ -110,11 +111,18 @@ io.on('connection', (socket) => {
   socket.emit('refresh parti', partiPool.getAll());
 
   socket.on('signin', (id) => {
-    if (id === 'adnim') {
+    // 管理者
+    if (id === 'admin') {
       socket.emit('god-you');
       log('上帝降臨!');
 
       bindGodEvent(socket);
+      return;
+    }
+
+    // 重複登入
+    if (partiPool.get(id)) {
+      socket.emit('signin-duplicate');
       return;
     }
 

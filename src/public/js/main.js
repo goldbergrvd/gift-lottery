@@ -81,6 +81,11 @@ $('#signin-btn').on('click', function (evt) {
   }
 });
 
+socket.on('signin-duplicate', function () {
+  alert('重複登入');
+  $('#signin-btn').attr('disabled', false);
+});
+
 // 一般使用者登入成功
 socket.on('sign-success', function (info) {
   selfInfo = info;
@@ -101,6 +106,14 @@ socket.on('sign-success', function (info) {
     tuneImgHeight();
   });
 
+  // 樂透號碼結果
+  socket.on('lottery-result', function (data) {
+    var $lotteryLi = $('li[data-id="' + data.lotteryId + '"]');
+    $lotteryLi.find('.mask').remove();
+    $lotteryLi.append('<div class="mask mask-lottery-match"></div>');
+  });
+
+  // 溫拿
   socket.on('winner', function (winnerId) {
     if (selfInfo.id === winnerId) {
       selfInfo.winner = true;
@@ -126,13 +139,24 @@ socket.on('god-you', function (info) {
     socket.emit('lottery');
   });
 
+  // 樂透號碼結果
   socket.on('lottery-result', function (data) {
     lottery = data;
-    $('#lottery-parti').text(data.winnerIdent);
+    $('#lottery-parti').text(data.winnerIdent + ' 選中 ' + data.lotteryIdent);
+    $('#next-round-btn').attr('disabled', true);
   });
 
+  // 確定樂透成立
   $('#lottery-resolve-btn').on('click', function (evt) {
     socket.emit('lottery-resolve', lottery.lotteryId);
+    $(this).attr('disabled', true);
+    $('#next-round-btn').attr('disabled', false);
+  });
+
+  // 開始下一回合
+  $('#next-round-btn').on('click', function (evt) {
+    socket.emit('next-round');
+    $('#lottery-resolve-btn').attr('disabled', false);
   });
 });
 
