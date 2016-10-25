@@ -52,6 +52,46 @@ function tuneImgHeight () {
   $img.height(width);
 }
 
+function lottering () {
+  let $liEles = $('li[data-id]:not([data-selected-by-id])');
+  let currIndex = 0;
+  let prevMaskClass;
+
+  function revertOldMask () {
+    if (prevMaskClass) {
+      let $prevLi = $($liEles.get(currIndex - 1));
+      $prevLi.find('.mask').remove();
+      $prevLi.append(`<div class="${prevMaskClass}"></div>`);
+    }
+  }
+
+  let iid = setInterval(function () {
+              // 還原舊的 mask
+              revertOldMask();
+
+              if (currIndex === $liEles.length) {
+                currIndex = 0;
+              }
+
+              let $currLi = $($liEles.get(currIndex));
+
+              // 記下舊的 mask
+              let $mask = $currLi.find('.mask');
+              prevMaskClass = $mask.attr('class');
+
+              // 換成新的 mask
+              $mask.remove();
+              $currLi.append('<div class="mask mask-lottery-match"></div>');
+
+              currIndex++;
+            }, 100);
+
+  return function () {
+    clearInterval(iid);
+    revertOldMask();
+  };
+}
+
 $('#signup-btn').on('click', function (evt) {
   evt.preventDefault();
 
@@ -108,9 +148,15 @@ socket.on('sign-success', function (info) {
 
   // 樂透號碼結果
   socket.on('lottery-result', function (data) {
+    selfInfo.stopper();
+
     var $lotteryLi = $('li[data-id="' + data.lotteryId + '"]');
     $lotteryLi.find('.mask').remove();
     $lotteryLi.append('<div class="mask mask-lottery-match"></div>');
+  });
+
+  socket.on('lottering', function () {
+    selfInfo.stopper = lottering();
   });
 
   // 溫拿

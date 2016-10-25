@@ -29,8 +29,7 @@ function broadcastPool () {
 
 function bindGodEvent (socket) {
   socket.on('lottery', () => {
-    var lotteryId = partiPool.lottery();
-    if (lotteryId > -1) {
+    var lottering = partiPool.lottery(function (lotteryId) {
       var parti = partiPool.get(lotteryId);
       var winner = parti.getDesiredBy();
       log(`中獎者: ${winner.nickname}`);
@@ -39,6 +38,9 @@ function bindGodEvent (socket) {
         lotteryIdent: `#${parti.id} ${parti.nickname}`,
         winnerIdent: `#${winner.id} ${winner.nickname}`
       });
+    });
+    if (lottering) {
+      io.emit('lottering');
     }
   });
 

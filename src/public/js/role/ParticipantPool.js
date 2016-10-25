@@ -65,11 +65,18 @@ function getAll () {
   return target;
 }
 
-function lottery () {
+function lottery (done) {
   let unSelectedBy = getAll().filter((parti) => !parti.isSelectedBy());
-  return unSelectedBy.length === 0
-         ? -1
-         : unSelectedBy[Math.floor(Math.random() * unSelectedBy.length)].getId();
+  if (unSelectedBy.length === 0) {
+    return false;
+  }
+
+  setTimeout(function () {
+    let result = unSelectedBy[Math.floor(Math.random() * unSelectedBy.length)].getId();
+    done(result);
+  }, 4000);
+
+  return true;
 }
 
 function desire (parti, desiredPartiId) {
