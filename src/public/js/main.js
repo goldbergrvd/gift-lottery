@@ -22,7 +22,7 @@ function gridView (parti) {
           maskEle = '<div class="mask mask-un-availible"></div>';
         }
       } else {
-        maskEle = '<div class="mask mask-selected"></div>';
+        maskEle = '<div class="mask mask-selected">' + parti.getSelectedBy().nickname + 'der</div>';
       }
     }
   } else {
@@ -50,6 +50,11 @@ function tuneImgHeight () {
   let $img = $('#grid-page img');
   let width = $img.width();
   $img.height(width);
+}
+
+function tuneMaskLineHeight () {
+  let maskHeight = $('li .mask').height();
+  $('li .mask-selected').css('line-height', maskHeight + 'px');
 }
 
 function lottering () {
@@ -144,6 +149,7 @@ socket.on('sign-success', function (info) {
     );
 
     tuneImgHeight();
+    tuneMaskLineHeight();
   });
 
   // 樂透號碼結果
