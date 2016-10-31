@@ -56,6 +56,7 @@ function bindGodEvent (socket) {
   socket.on('next-round', () => {
     partiPool.resetAllDesire();
     broadcastPool();
+    io.emit('start-select');
   });
 
 }

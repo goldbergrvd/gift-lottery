@@ -151,6 +151,11 @@
       margin: 20px auto 0;
     }
 
+    #unavailable {
+      background-color: rgba(133, 133, 133, 0.6);
+      z-index: 1;
+    }
+
   </style>
 </head>
 <body>
@@ -254,6 +259,8 @@
       <button id="next-round-btn">下一輪</button>
     </div>
   </div>
+
+  <div id="unavailable" class="container"></div>
 
   <iframe id="signup-response" src="" name="signup-response" style="display:none"></iframe>
 

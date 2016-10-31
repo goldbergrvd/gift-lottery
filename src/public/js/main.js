@@ -57,6 +57,14 @@ function tuneMaskLineHeight () {
   $('li .mask-selected').css('line-height', maskHeight + 'px');
 }
 
+function availableSelect(isAvailable) {
+  if (isAvailable) {
+    $('#unavailable').css('z-index', 1);
+  } else {
+    $('#unavailable').css('z-index', 3);
+  }
+}
+
 function lottering () {
   let $liEles = $('li[data-id]:not([data-selected-by-id])');
   let currIndex = 0;
@@ -138,6 +146,9 @@ socket.on('sign-success', function (info) {
   $('#grid-page').css('z-index', 2);
   $(this).attr('disabled', false);
 
+  // 先關閉選取
+  availableSelect(false);
+
   // 網格狀態改變
   socket.on('refresh parti', function (partiList) {
     $('#grid-page ul').html(
@@ -152,6 +163,10 @@ socket.on('sign-success', function (info) {
     tuneMaskLineHeight();
   });
 
+  socket.on('start-select', function () {
+    availableSelect(true);
+  });
+
   // 樂透號碼結果
   socket.on('lottery-result', function (data) {
     selfInfo.stopper();
@@ -163,6 +178,7 @@ socket.on('sign-success', function (info) {
 
   socket.on('lottering', function () {
     selfInfo.stopper = lottering();
+    availableSelect(false);
   });
 
   // 溫拿
