@@ -11,6 +11,8 @@ var port = process.env.PORT || 3000;
 var Participant = require('./public/js/role/Participant');
 var partiPool = require('./public/js/role/ParticipantPool');
 
+var isSelecting = false;
+
 const IMG_PATH = path.resolve('../res/img');
 
 function log (msg) {
@@ -41,22 +43,27 @@ function bindGodEvent (socket) {
     });
     if (lottering) {
       io.emit('lottering');
+      isSelecting = false;
     }
   });
 
   socket.on('lottery-resolve', (lotteryId) => {
     var selectedParti = partiPool.get(lotteryId);
     var winnerId = selectedParti.getDesiredBy().id;
-    if (partiPool.select(selectedParti, winnerId)) {
-      log(`${selectedParti.getSelectedBy().nickname} 中獎 ${selectedParti.getNickname()}`);
-      io.emit('winner', winnerId);
-    }
+
+    partiPool.select(selectedParti, winnerId, (success) => {
+      if (success) {
+        log(`${selectedParti.getSelectedBy().nickname} 中獎 ${selectedParti.getNickname()}`);
+        io.emit('winner', winnerId);
+      }
+    });
   });
 
   socket.on('next-round', () => {
     partiPool.resetAllDesire();
     broadcastPool();
     io.emit('start-select');
+    isSelecting = true;
   });
 
 }
@@ -124,7 +131,7 @@ io.on('connection', (socket) => {
     }
 
     // 重複登入
-    if (partiPool.get(id)) {
+    if (partiPool.get(id) && partiPool.get(id).isOnline()) {
       socket.emit('signin-duplicate');
       return;
     }
@@ -132,8 +139,12 @@ io.on('connection', (socket) => {
     partiPool.revertParti(id, (revertParti) => {
       parti = revertParti;
       socket.emit('sign-success', {
-        id: parti.getId(),
-        nickname: parti.getNickname()
+        info: {
+          id: parti.getId(),
+          nickname: parti.getNickname(),
+          winner: parti.isSelected()
+        },
+        isSelecting
       });
       broadcastPool();
       log(`${parti.ident()} 登入`);
@@ -165,8 +176,9 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     if (parti) {
       partiPool.removeParti(parti);
+      partiPool.showRelation();
       log(`再會了${parti.getNickname()}`);
-      broadcastPool();
+      // broadcastPool();
     }
   });
 

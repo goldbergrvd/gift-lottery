@@ -1,3 +1,9 @@
+(function () {
+  if (!localStorage) {
+    alert('瀏覽器支援度不足(LocalStorage)');
+  }
+}());
+
 var socket = io();
 var Participant = require('./role/Participant');
 
@@ -105,6 +111,11 @@ function lottering () {
   };
 }
 
+function autoSignin(id) {
+  $('#signin-input').val(id);
+  $('#signin-btn').trigger('click');
+}
+
 $('#signup-btn').on('click', function (evt) {
   evt.preventDefault();
 
@@ -118,8 +129,10 @@ $('#signup-btn').on('click', function (evt) {
       let id = $('#signup-response').contents().find('body').text();
       if (id) {
         clearInterval(iid);
-        $('#signin-input').val(id);
-        $('#signin-btn').trigger('click');
+
+        localStorage.setItem('id', id);
+
+        autoSignin(id);
         $(this).attr('disabled', false);
       }
     }, 10);
@@ -140,14 +153,14 @@ socket.on('signin-duplicate', function () {
 });
 
 // 一般使用者登入成功
-socket.on('sign-success', function (info) {
-  selfInfo = info;
+socket.on('sign-success', function (data) {
+  selfInfo = data.info;
   $('#sign-page').css('z-index', 1);
   $('#grid-page').css('z-index', 2);
   $(this).attr('disabled', false);
 
   // 先關閉選取
-  availableSelect(false);
+  availableSelect(data.isSelecting);
 
   // 網格狀態改變
   socket.on('refresh parti', function (partiList) {
@@ -263,3 +276,9 @@ $('#grid-page').on('click', 'li', function (evt) {
 
   socket.emit('desire', partiId);
 });
+
+// (function () {
+//   let id = localStorage.getItem('id');
+//   if (id) autoSignin(id);
+// }());
+

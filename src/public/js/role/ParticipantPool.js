@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var Rx = require('rxjs/Rx');
 var Participant = require('./Participant');
 
 const RES_PATH = path.resolve('../res');
@@ -43,13 +44,14 @@ function revertParti (id, done) {
 
 function removeParti (parti) {
   if (pool[parti.getId()]) {
-    if (parti.isDesiredBy()) {
-      pool[parti.getDesiredBy().id].clearDesired();
-    }
-    if (parti.isDesired()) {
-      pool[parti.getDesired().id].clearDesiredBy();
-    }
-    delete pool[parti.getId()];
+    parti.setOnline(false);
+    // if (parti.isDesiredBy()) {
+    //   pool[parti.getDesiredBy().id].clearDesired();
+    // }
+    // if (parti.isDesired()) {
+    //   pool[parti.getDesired().id].clearDesiredBy();
+    // }
+    // delete pool[parti.getId()];
   }
 }
 
@@ -128,25 +130,25 @@ function resetAllDesire() {
   }
 }
 
-function select (parti, selectedByPartiId) {
+function select (parti, selectedByPartiId, done) {
   let selectByParti = pool[selectedByPartiId];
 
   if (!selectByParti) {
-    return false;
+    done(false);
   }
 
   if (parti.getId() === selectByParti.getId()) {
-    return false;
+    done(false);
   }
 
   if (selectByParti.isSelected()) {
-    return false;
+    done(false);
   }
 
   parti.setSelectedBy(selectByParti);
   selectByParti.setSelected(parti);
 
-  return true;
+  persistTwo(parti, selectByParti, () => done(true));
 }
 
 function unselect (parti, unselectedPartiId) {
@@ -168,10 +170,10 @@ function clear () {
 
 function showRelation () {
   console.log('----------------------------------------------------------------');
-  console.log('id\tname\ts\tsb\td\tdb');
+  console.log('id\tname\ts\tsb\td\tdb\ton');
   for(let key in pool) {
     let parti = pool[key];
-    console.log(`#${parti.getId()}\t${parti.getNickname()}\t${parti.getSelected().nickname}\t${parti.getSelectedBy().nickname}\t${parti.getDesired().nickname}\t${parti.getDesiredBy().nickname}`);
+    console.log(`#${parti.getId()}\t${parti.getNickname()}\t${parti.getSelected().nickname}\t${parti.getSelectedBy().nickname}\t${parti.getDesired().nickname}\t${parti.getDesiredBy().nickname}\t${parti.isOnline()}`);
   }
   console.log('----------------------------------------------------------------');
 }
@@ -181,6 +183,24 @@ function persist (parti, done) {
   fs.writeFile(filePath, parti.toJson(), (err) => {
     if (err) throw err;
     done(parti);
+  });
+}
+
+function persistTwo(parti1, parti2, done) {
+  parti1.clearDesired();
+  parti1.clearDesiredBy();
+  parti2.clearDesired();
+  parti2.clearDesiredBy();
+
+  Rx.Observable.create(observer => {
+    persist(parti1, () => observer.next(parti1));
+    persist(parti2, () => observer.next(parti2));
+  })
+  .take(2)
+  .subscribe({
+    next: parti => console.log(`${parti.getNickname()}儲存完畢！`),
+    error: err => console.error('Observer got an error: ' + err),
+    complete: () => done()
   });
 }
 

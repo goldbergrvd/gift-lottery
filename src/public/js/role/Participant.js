@@ -22,6 +22,8 @@ module.exports = class Participant {
     // 回合中選擇
     this.desired = desired;
     this.desiredBy = desiredBy;
+
+    this.online = true;
   }
 
   getId() { return this.id; }
@@ -48,6 +50,9 @@ module.exports = class Participant {
   clearDesiredBy() { this.desiredBy = NON_PARTI; }
   isDesiredBy() { return this.desiredBy.id !== -1; }
 
+  isOnline() { return this.online; }
+  setOnline(val) { this.online = val; }
+
   toString() {
     var condition = this.isSelectedBy() ?
                     'selected by ' + this.selectedBy.nickname :
@@ -60,7 +65,7 @@ module.exports = class Participant {
   }
 
   toJson() {
-    return JSON.stringify(this);
+    return JSON.stringify(this, null, 2);
   }
 
   static fromJson(json) {
