@@ -6,6 +6,7 @@ var fs = require('fs');
 var path = require('path');
 var moment = require('moment');
 var formidable = require('formidable');
+var Rx = require('rxjs/Rx');
 var port = process.env.PORT || 3000;
 
 var Participant = require('./public/js/role/Participant');
@@ -20,7 +21,7 @@ function log (msg) {
 }
 
 function broadcastPool () {
-  io.emit('refresh parti', partiPool.getAll());
+  io.emit('refresh-parti', partiPool.getAll());
   if (partiPool.isAllDesiredBy()) {
     io.emit('lottery-available');
   } else {
@@ -62,8 +63,22 @@ function bindGodEvent (socket) {
   socket.on('next-round', () => {
     partiPool.resetAllDesire();
     broadcastPool();
-    io.emit('start-select');
-    isSelecting = true;
+
+    if (partiPool.isAllSelected()) {
+      io.emit('game-over');
+      return;
+    }
+
+    Rx.Observable.interval(1000)
+      .take(4)
+      .subscribe({
+        next: n => io.emit('unavailable-msg', 3 - n),
+        error: e => console.error(e),
+        complete: () => {
+          io.emit('start-select');
+          isSelecting = true;
+        }
+      });
   });
 
 }
@@ -118,7 +133,7 @@ io.on('connection', (socket) => {
 
   var parti;
 
-  socket.emit('refresh parti', partiPool.getAll());
+  socket.emit('refresh-parti', partiPool.getAll());
 
   socket.on('signin', (id) => {
     // 管理者

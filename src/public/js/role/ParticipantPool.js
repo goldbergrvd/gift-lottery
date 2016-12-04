@@ -45,13 +45,6 @@ function revertParti (id, done) {
 function removeParti (parti) {
   if (pool[parti.getId()]) {
     parti.setOnline(false);
-    // if (parti.isDesiredBy()) {
-    //   pool[parti.getDesiredBy().id].clearDesired();
-    // }
-    // if (parti.isDesired()) {
-    //   pool[parti.getDesired().id].clearDesiredBy();
-    // }
-    // delete pool[parti.getId()];
   }
 }
 
@@ -164,6 +157,15 @@ function isAllDesiredBy () {
   return true;
 }
 
+function isAllSelected() {
+  for (let key in pool) {
+    if (!pool[key].isSelected()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function clear () {
   pool = {};
 }
@@ -243,6 +245,7 @@ module.exports = {
   select,
   unselect,
   isAllDesiredBy,
+  isAllSelected,
   clear,
   showRelation
 };

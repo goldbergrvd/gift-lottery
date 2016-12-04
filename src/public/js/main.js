@@ -2,6 +2,8 @@
   if (!localStorage) {
     alert('瀏覽器支援度不足(LocalStorage)');
   }
+
+  $('#unavailable').css('line-height', $(window).height() + 'px');
 }());
 
 var socket = io();
@@ -65,9 +67,9 @@ function tuneMaskLineHeight () {
 
 function availableSelect(isAvailable) {
   if (isAvailable) {
-    $('#unavailable').css('z-index', 1);
+    $('#unavailable').css('z-index', 1).text('');
   } else {
-    $('#unavailable').css('z-index', 3);
+    $('#unavailable').css('z-index', 3).text('');
   }
 }
 
@@ -163,7 +165,7 @@ socket.on('sign-success', function (data) {
   availableSelect(data.isSelecting);
 
   // 網格狀態改變
-  socket.on('refresh parti', function (partiList) {
+  socket.on('refresh-parti', function (partiList) {
     $('#grid-page ul').html(
       _.chain(partiList)
        .map(parti => new Participant(parti))
@@ -178,6 +180,10 @@ socket.on('sign-success', function (data) {
 
   socket.on('start-select', function () {
     availableSelect(true);
+  });
+
+  socket.on('unavailable-msg', function (data) {
+    $('#unavailable').text(data);
   });
 
   // 樂透號碼結果
@@ -199,6 +205,10 @@ socket.on('sign-success', function (data) {
     if (selfInfo.id === winnerId) {
       selfInfo.winner = true;
     }
+  });
+
+  socket.on('game-over', function () {
+    $('#unavailable').css('background-color', 'rgba(0, 0, 0, 0)');
   });
 });
 
