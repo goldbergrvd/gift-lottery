@@ -17,33 +17,7 @@ function gridView (parti) {
   let desiredByIdAttr = parti.isDesiredBy() ? `data-desired-by-id="${parti.getDesiredBy().id}"` : '';
   let selectedIdAttr = parti.isSelected() ? `data-selected-id="${parti.getSelected().id}"` : '';
   let selectedByIdAttr = parti.isSelectedBy() ? `data-selected-by-id="${parti.getSelectedBy().id}"` : '';
-  let maskEle = '';
-
-  if (selfInfo.winner) {
-    if (!parti.isSelectedBy()) {
-      maskEle = '<div class="mask mask-un-availible"></div>';
-    } else {
-      if (parti.isDesiredBy()) {
-        if (parti.getDesiredBy().id === selfInfo.id) {
-          maskEle = '<div class="mask mask-winner-desire"></div>';
-        } else {
-          maskEle = '<div class="mask mask-un-availible"></div>';
-        }
-      } else {
-        maskEle = '<div class="mask mask-selected">' + parti.getSelectedBy().nickname + 'der</div>';
-      }
-    }
-  } else {
-    if (parti.isSelectedBy()) {
-      maskEle = '<div class="mask mask-un-availible"></div>';
-    } else if (parti.isDesiredBy()) {
-      if (parti.getDesiredBy().id === selfInfo.id) {
-        maskEle = '<div class="mask mask-loser-desire"></div>';
-      } else {
-        maskEle = '<div class="mask mask-un-availible"></div>';
-      }
-    }
-  }
+  let maskEle = getMaskEle(parti);
 
   return `<li ${partiIdAttr} ${desireIdAttr} ${desiredByIdAttr} ${selectedIdAttr} ${selectedByIdAttr}>
             <div class="photo">
@@ -52,6 +26,59 @@ function gridView (parti) {
             <div class="ident">${parti.ident()}</div>
             ${maskEle}
           </li>`;
+}
+
+function refreshPartiLiEle (parti) {
+  let $li = $(`li[data-id="${parti.getId()}"]`);
+  let maskEle = getMaskEle(parti);
+
+  if ($li.length > 0) {
+    // mask
+    $li.find('.mask').remove();
+    $li.append(maskEle);
+
+    // data-attr
+    $li.removeAttr('data-desired-id');
+    $li.removeAttr('data-desired-by-id');
+    $li.removeAttr('data-selected-id');
+    $li.removeAttr('data-selected-by-id');
+    if (parti.isDesired()) $li.attr('data-desired-id', parti.getDesired().id);
+    if (parti.isDesiredBy()) $li.attr('data-desired-by-id', parti.getDesiredBy().id);
+    if (parti.isSelected()) $li.attr('data-selected-id', parti.getSelected().id);
+    if (parti.isSelectedBy()) $li.attr('data-selected-by-id', parti.getSelectedBy().id);
+  } else {
+    alert('錯亂，請重新登入...囧');
+  }
+}
+
+function getMaskEle (parti) {
+  if (selfInfo.winner) {
+    if (!parti.isSelectedBy()) {
+       return '<div class="mask mask-un-availible"></div>';
+    } else {
+      if (parti.isDesiredBy()) {
+        if (parti.getDesiredBy().id === selfInfo.id) {
+           return '<div class="mask mask-winner-desire"></div>';
+        } else {
+           return '<div class="mask mask-un-availible"></div>';
+        }
+      } else {
+         return '<div class="mask mask-selected">' + parti.getSelectedBy().nickname + 'der</div>';
+      }
+    }
+  } else {
+    if (parti.isSelectedBy()) {
+       return '<div class="mask mask-un-availible"></div>';
+    } else if (parti.isDesiredBy()) {
+      if (parti.getDesiredBy().id === selfInfo.id) {
+         return '<div class="mask mask-loser-desire"></div>';
+      } else {
+         return '<div class="mask mask-un-availible"></div>';
+      }
+    } else {
+      return '';
+    }
+  }
 }
 
 function tuneImgHeight () {
@@ -166,13 +193,22 @@ socket.on('sign-success', function (data) {
 
   // 網格狀態改變
   socket.on('refresh-parti', function (partiList) {
-    $('#grid-page ul').html(
+
+    if ($('#grid-page li').length !== partiList.length) {
+      $('#grid-page ul').html(
+        _.chain(partiList)
+         .map(parti => new Participant(parti))
+         .map(parti => gridView(parti))
+         .value()
+         .join('')
+      );
+
+    // 只更新 data-attr 和 mask
+    } else {
       _.chain(partiList)
        .map(parti => new Participant(parti))
-       .map(parti => gridView(parti))
-       .value()
-       .join('')
-    );
+       .each(refreshPartiLiEle)
+    }
 
     tuneImgHeight();
     tuneMaskLineHeight();
@@ -252,11 +288,11 @@ socket.on('god-you', function (info) {
 });
 
 $('#grid-page').on('click', 'li', function (evt) {
-  let partiId = parseInt($(this).data('id'));
-  let desiredId = parseInt($(this).data('desired-id'));
-  let desiredById = parseInt($(this).data('desired-by-id'));
-  let selectedId = parseInt($(this).data('selected-id'));
-  let selectedById = parseInt($(this).data('selected-by-id'));
+  let partiId = parseInt($(this).attr('data-id'));
+  let desiredId = parseInt($(this).attr('data-desired-id'));
+  let desiredById = parseInt($(this).attr('data-desired-by-id'));
+  let selectedId = parseInt($(this).attr('data-selected-id'));
+  let selectedById = parseInt($(this).attr('data-selected-by-id'));
 
   // 再點一次自己點過的就取消
   if (selfInfo.id === desiredById) {

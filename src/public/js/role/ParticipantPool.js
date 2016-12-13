@@ -150,7 +150,7 @@ function unselect (parti, unselectedPartiId) {
 
 function isAllDesiredBy () {
   for (let key in pool) {
-    if (!pool[key].isDesiredBy()) {
+    if (!pool[key].isDesiredBy() && !pool[key].isSelectedBy()) {
       return false;
     }
   }
