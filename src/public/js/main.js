@@ -264,6 +264,7 @@ socket.on('god-you', function (info) {
 
   $('#lottery-btn').on('click', function (evt) {
     socket.emit('lottery');
+    $(this).attr('disabled', true);
   });
 
   // 樂透號碼結果

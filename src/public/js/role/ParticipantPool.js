@@ -28,18 +28,23 @@ function addParti (nickname, imgExt, done) {
 }
 
 function revertParti (id, done) {
-  let filename = PERSIST_PATH + '/' + id + '.json';
+  if (pool[id]) {
+    done(pool[id]);
 
-  fs.stat(filename, (err) => {
-    if (err === null) {
-      fs.readFile(filename, 'utf-8', (err, json) => {
-        if (err) throw err;
-        let parti = Participant.fromJson(json);
-        pool[parti.getId()] = parti;
-        done(parti);
-      });
-    }
-  });
+  } else {
+    let filename = PERSIST_PATH + '/' + id + '.json';
+
+    fs.stat(filename, (err) => {
+      if (err === null) {
+        fs.readFile(filename, 'utf-8', (err, json) => {
+          if (err) throw err;
+          let parti = Participant.fromJson(json);
+          pool[parti.getId()] = parti;
+          done(parti);
+        });
+      }
+    });
+  }
 }
 
 function removeParti (parti) {
