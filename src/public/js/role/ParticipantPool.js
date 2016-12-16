@@ -29,6 +29,7 @@ function addParti (nickname, imgExt, done) {
 
 function revertParti (id, done) {
   if (pool[id]) {
+    pool[id].setOnline(true);
     done(pool[id]);
 
   } else {
