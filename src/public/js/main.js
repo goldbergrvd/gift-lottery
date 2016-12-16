@@ -188,6 +188,8 @@ socket.on('sign-success', function (data) {
   $('#grid-page').css('z-index', 2);
   $(this).attr('disabled', false);
 
+  localStorage.setItem('id', selfInfo.id);
+
   // 先關閉選取
   availableSelect(data.isSelecting);
 
@@ -240,11 +242,16 @@ socket.on('sign-success', function (data) {
   socket.on('winner', function (winnerId) {
     if (selfInfo.id === winnerId) {
       selfInfo.winner = true;
+      $('#unavailable').text('WIN!');
+    } else {
+      if (!selfInfo.winner) {
+        $('#unavailable').text('LOSS!');
+      }
     }
   });
 
   socket.on('game-over', function () {
-    $('#unavailable').css('background-color', 'rgba(0, 0, 0, 0)');
+    $('#unavailable').css('background-color', 'rgba(0, 0, 0, 0)').text('');
   });
 });
 
@@ -257,20 +264,27 @@ socket.on('god-you', function (info) {
 
   socket.on('lottery-available', function () {
     $('#lottery-btn').attr('disabled', false);
+    $('#lottery-resolve-btn').attr('disabled', true);
+    $('#next-round-btn').attr('disabled', true);
   });
   socket.on('lottery-unavailable', function () {
     $('#lottery-btn').attr('disabled', true);
+    $('#lottery-resolve-btn').attr('disabled', true);
+    $('#next-round-btn').attr('disabled', true);
   });
 
   $('#lottery-btn').on('click', function (evt) {
     socket.emit('lottery');
     $(this).attr('disabled', true);
+    $('#lottery-resolve-btn').attr('disabled', true);
+    $('#next-round-btn').attr('disabled', true);
   });
 
   // 樂透號碼結果
   socket.on('lottery-result', function (data) {
     lottery = data;
     $('#lottery-parti').text(data.winnerIdent + ' 選中 ' + data.lotteryIdent);
+    $('#lottery-resolve-btn').attr('disabled', false);
     $('#next-round-btn').attr('disabled', true);
   });
 
@@ -324,8 +338,8 @@ $('#grid-page').on('click', 'li', function (evt) {
   socket.emit('desire', partiId);
 });
 
-// (function () {
-//   let id = localStorage.getItem('id');
-//   if (id) autoSignin(id);
-// }());
+(function () {
+  let id = localStorage.getItem('id');
+  if (id) $('#signin-input').val(id);
+}());
 
